@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: rails_user
+      POSTGRES_DB: rails_app_development
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://rails_user:password@db:5432/rails_app_development
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
