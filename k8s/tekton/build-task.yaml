@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-docker-image
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: IMAGE
+      type: string
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:latest
+      command:
+        - /kaniko/executor
+      args:
+        - --context=$(workspaces.source.path)
+        - --dockerfile=$(workspaces.source.path)/Dockerfile
+        - --destination=$(params.IMAGE)
+      volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker
+  volumes:
+    - name: docker-config
+      secret:
+        secretName: regcred
+        items:
+          - key: .dockerconfigjson
+            path: config.json
